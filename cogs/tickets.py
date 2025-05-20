@@ -55,6 +55,7 @@ class TicketsCog(commands.Cog):
             await ctx.send("Não consegui enviar mensagem privada. Verifique suas configurações de privacidade.")
 
     @commands.command()
+    @is_owner()
     async def ticket(self, ctx):
         guild = ctx.guild
         categoria = get(guild.categories, name="SUPORTE")
