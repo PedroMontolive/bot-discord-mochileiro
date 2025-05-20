@@ -1,6 +1,7 @@
 import discord
 from discord.utils import get
 import os
+from discord import Colour
 
 DATA_DIR = "data"
 
@@ -19,16 +20,22 @@ def load_welcome_message_id(guild_id):
 async def create_eternauta_role(guild):
     role = get(guild.roles, name="Eternauta")
     if not role:
-        role = await guild.create_role(name="Eternauta")
+        azul_ciano = discord.Colour.teal()
+        role = await guild.create_role(
+            name="Eternauta",
+            colour=azul_ciano,
+            mentionable=True
+            )
     return role
 
 async def create_welcome_channel(guild, eternauta_role):
-    channel = get(guild.text_channels, name="hey-olhe-aqui")
+    channel = get(guild.text_channels, name="👋🏼hey-olhe-aqui")
     if not channel:
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=True, send_messages=False),
             eternauta_role: discord.PermissionOverwrite(view_channel=False),
             guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True),
         }
-        channel = await guild.create_text_channel("hey-olhe-aqui", overwrites=overwrites)
+
+        channel = await guild.create_text_channel("👋🏼hey-olhe-aqui", overwrites=overwrites)
     return channel

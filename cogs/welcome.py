@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 from utils.setup_tools import create_eternauta_role, create_welcome_channel, save_welcome_message_id, load_welcome_message_id
 import os
+from utils.permissions import has_role, is_owner
 
 class WelcomeCog(commands.Cog):
     def __init__(self, bot):
@@ -10,17 +11,22 @@ class WelcomeCog(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
+    @is_owner()
     async def setup(self, ctx):
         guild = ctx.guild
         role = await create_eternauta_role(guild)
         channel = await create_welcome_channel(guild, role)
 
-        welcome_message = (
-            "👋 **Bem-vindo(a) à comunidade Refúgio 42!**\n\n"
-            "Antes de começarmos, precisamos saber se você é humano (preferencialmente, né 😅).\n\n"
-            "✅ Basta clicar no ícone abaixo para continuar sua jornada como um **Eternauta**."
+        welcome_embed = discord.Embed(
+            title="👋 Bem-vindo(a) à comunidade Refúgio 42!",
+            description=(
+                "Antes de começarmos, precisamos saber se você é humano (preferencialmente, né 😅).\n\n"
+                "✅ Basta clicar no ícone abaixo para continuar sua jornada como um **Eternauta**."
+            ),
+            color=discord.Color.blue()
         )
-        message = await channel.send(welcome_message)
+
+        message = await channel.send(embed=welcome_embed)
         await message.pin()
         await message.add_reaction("✅")
         save_welcome_message_id(guild.id, message.id)
@@ -47,5 +53,6 @@ class WelcomeCog(commands.Cog):
             if member and role not in member.roles:
                 await member.add_roles(role)
 
-def setup(bot):
-    bot.add_cog(WelcomeCog(bot))
+async def setup(bot):
+    await bot.add_cog(WelcomeCog(bot))
+
