@@ -4,10 +4,12 @@ import os
 from dotenv import load_dotenv
 import asyncio
 from utils.permissions import has_role, is_owner
+
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
+intents.guilds = True
 intents.members = True
 intents.message_content = True
 intents.reactions = True
@@ -29,24 +31,23 @@ async def comandos(ctx):
     cmds = [cmd.name for cmd in bot.commands]
     await ctx.send(f"Comandos disponíveis: {', '.join(cmds)}")
 
-
-import asyncio
-
 async def main():
     try:
         async with bot:
             print("Carregando extensão welcome...")
             await bot.load_extension("cogs.welcome")
             print("Extensão carregada com sucesso!")
+            print("Carregando extensão tickets...")
+            await bot.load_extension("cogs.tickets")
+            print("Extensão carregada com sucesso!")
             await bot.start(TOKEN)
     except KeyboardInterrupt:
         print("\n[!] Bot encerrado com CTRL+C com segurança. Até mais, comandante.")
     except asyncio.CancelledError:
-        pass  # Evita printar traceback gigante
+        pass
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        # Garante que nada escape aqui também
         print("\n[!] Encerrando execução...")

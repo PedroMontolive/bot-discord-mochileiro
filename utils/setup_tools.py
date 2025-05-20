@@ -28,6 +28,18 @@ async def create_eternauta_role(guild):
             )
     return role
 
+async def create_staff_role(guild):
+    role = get(guild.roles, name="Staff")
+    if not role:
+        cor_verde = discord.Colour.green()  # ou escolha outra cor que preferir
+        role = await guild.create_role(
+            name="Staff",
+            colour=cor_verde,
+            mentionable=True,
+            hoist=True  # mostra separado na lista de membros, se quiser
+        )
+    return role
+
 async def create_welcome_channel(guild, eternauta_role):
     channel = get(guild.text_channels, name="👋🏼hey-olhe-aqui")
     if not channel:
