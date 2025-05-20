@@ -20,26 +20,26 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"Bot conectado como {bot.user}")
+    print(f"✅ Bot conectado como {bot.user}")
 
     guild_id = os.getenv("GUILD_ID")
     if not guild_id:
-        print("Variável GUILD_ID não configurada no .env")
+        print("❌ Variável GUILD_ID não configurada no .env")
         return
 
     guild = bot.get_guild(int(guild_id))
     if not guild:
-        print(f"Guilda com ID {guild_id} não encontrada!")
+        print(f"❌ Guilda com ID {guild_id} não encontrada!")
         return
 
     categoria = get(guild.categories, name="SUPORTE")
     if not categoria:
-        print("Categoria 'SUPORTE' não encontrada!")
+        print("❌ Categoria 'SUPORTE' não encontrada!")
         return
 
     canal_suporte = get(categoria.text_channels, name="🧰suporte-geral")
     if not canal_suporte:
-        print("Canal '🧰suporte-geral' não encontrado!")
+        print("❌ Canal '🧰suporte-geral' não encontrado!")
         return
 
     pins = await canal_suporte.pins()
@@ -47,9 +47,9 @@ async def on_ready():
         if mensagem.author == bot.user and mensagem.embeds:
             try:
                 await mensagem.edit(view=TicketMenu())
-                print("View TicketMenu registrada na mensagem fixada do painel de tickets.")
+                print("📌 View TicketMenu registrada com sucesso.")
             except Exception as e:
-                print(f"Erro ao registrar View TicketMenu: {e}")
+                print(f"⚠️ Erro ao registrar View TicketMenu: {e}")
             break
 
 @bot.command()
@@ -63,15 +63,20 @@ async def comandos(ctx):
     cmds = [cmd.name for cmd in bot.commands]
     await ctx.send(f"Comandos disponíveis: {', '.join(cmds)}")
 
+async def load_extension_with_style(bot, name, path):
+    print(f"⏳ Carregando [{name.upper():<10}] ...", end="", flush=True)
+    await asyncio.sleep(0.4)  # simula tempo de carregamento
+    await bot.load_extension(path)
+    print(f"\r✅ Extensão [{name.upper():<10}] carregada com sucesso!")
+
 async def main():
     try:
         async with bot:
-            print("Carregando extensão welcome...")
-            await bot.load_extension("cogs.welcome")
-            print("Extensão carregada com sucesso!")
-            print("Carregando extensão tickets...")
-            await bot.load_extension("cogs.tickets")
-            print("Extensão carregada com sucesso!")
+            await load_extension_with_style(bot, "welcome", "cogs.welcome")
+            await load_extension_with_style(bot, "tickets", "cogs.tickets")
+            await load_extension_with_style(bot, "notices", "cogs.notices")
+
+            print("\n🚀 Todas as extensões carregadas! Iniciando o bot...\n")
             await bot.start(TOKEN)
     except KeyboardInterrupt:
         print("\n[!] Bot encerrado com CTRL+C com segurança. Até mais, comandante.")
