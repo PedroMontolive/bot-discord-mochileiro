@@ -31,9 +31,10 @@ class WelcomeCog(commands.Cog):
         await message.add_reaction("✅")
         save_welcome_message_id(guild.id, message.id)
 
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.member.bot:
+        if payload.user_id == self.bot.user.id:
             return
 
         guild = self.bot.get_guild(payload.guild_id)
@@ -48,10 +49,26 @@ class WelcomeCog(commands.Cog):
             return
 
         role = get(guild.roles, name="Eternauta")
-        if role:
-            member = guild.get_member(payload.user_id)
-            if member and role not in member.roles:
+        if not role:
+            print("Cargo 'Eternauta' não encontrado.")
+            return
+
+        member = guild.get_member(payload.user_id)
+        if not member:
+            print(f"Membro com ID {payload.user_id} não encontrado no cache, tentando fetch...")
+            try:
+                member = await guild.fetch_member(payload.user_id)
+            except:
+                print("Falha ao buscar membro.")
+                return
+
+        if role not in member.roles:
+            try:
                 await member.add_roles(role)
+                print(f"Cargo 'Eternauta' adicionado para {member}.")
+            except Exception as e:
+                print(f"Erro ao adicionar cargo: {e}")
+
 
 async def setup(bot):
     await bot.add_cog(WelcomeCog(bot))
