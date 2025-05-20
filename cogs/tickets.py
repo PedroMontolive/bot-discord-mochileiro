@@ -152,10 +152,12 @@ class TicketSelect(Select):
         user = interaction.user
         guild = interaction.guild
 
+        # Pegando IDs do .env
         GUILD_ID = os.getenv("GUILD_ID")
         STAFF_ROLE_ID = os.getenv("STAFF_ROLE_ID")
         CATEGORIA_TICKET_ID = os.getenv("CATEGORIA_TICKET_ID")
 
+        # Validação básica dos IDs
         if not GUILD_ID or not STAFF_ROLE_ID or not CATEGORIA_TICKET_ID:
             await interaction.response.send_message("Configuração do bot incompleta.", ephemeral=True)
             return
@@ -168,6 +170,7 @@ class TicketSelect(Select):
             await interaction.response.send_message("IDs configurados no .env inválidos.", ephemeral=True)
             return
 
+        # Confere se está no servidor certo
         if guild.id != guild_id_int:
             await interaction.response.send_message("Este comando só funciona neste servidor.", ephemeral=True)
             return
@@ -180,25 +183,30 @@ class TicketSelect(Select):
             await interaction.response.send_message("Configuração incorreta: categoria ou cargo não encontrados.", ephemeral=True)
             return
 
+        # Define permissões do canal do ticket
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
             staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
 
+        # Verifica se o usuário já tem um ticket aberto deste tipo (nome do canal único)
         existing_channel = get(categoria.text_channels, name=nome_canal)
         if existing_channel:
-            await interaction.response.send_message(f"Você já tem um ticket aberto: {existing_channel.mention}", ephemeral=True)
+            await interaction.response.send_message(
+                f"Você já tem um ticket aberto deste tipo: {existing_channel.mention}",
+                ephemeral=True
+            )
             return
 
+        # Cria o canal
         canal = await guild.create_text_channel(nome_canal, category=categoria, overwrites=overwrites)
-        
-        # Chama método para enviar a mensagem de fechar ticket
+
+        # Envia mensagem para fechar ticket
         cog = self.view.bot.get_cog("TicketsCog") if hasattr(self.view, "bot") else None
         if cog:
             await cog.criar_mensagem_fechar(canal, user, staff_role)
         else:
-            # Caso não tenha referência do cog, cria a view diretamente
             view = CloseTicketView(user, staff_role)
             await canal.send("Use o botão abaixo para finalizar este ticket.", view=view)
 
